@@ -1,47 +1,91 @@
-/**
- * Created by Milos on 11/19/2015.
- */
-var Button = React.createClass({
+
+var StarsFrame = React.createClass({
 
     render: function(){
-        return (
-            <button className="btn btn-primary" onClick={this.props.lokalniKlikHandler} >+1</button>
-        );
-    }
-});
 
-var Result = React.createClass({
-    render: function(){
-        return (
-            <div>xxxxxxx Neki rezultat</div>
-        );
-    }
-});
+        var numberOfStars = Math.floor(Math.random()*9) + 1;
 
-var Main = React.createClass({
-    getInitialState: function(){
-        return {
-            counter: 0
+        var stars = [];
+        for(var i = 0; i< numberOfStars; i++) {
+            stars.push(
+                <span className="glyphicon glyphicon-star"></span>
+            );
         }
-    },
+        return (
+          <div id="stars-frame">
+            <div className="well">
+                {stars}
+            </div>
+          </div>
+        );
+    }
+});
 
-    povecajCounter: function(){
-        this.setState({
-            counter: this.state.counter + 1
-        })
-    },
 
+var ButtonFrame = React.createClass({
     render: function(){
         return (
-            <div>
-                <Button lokalniKlikHendler={this.povecajCounter} />
-                <Result />
+            <div id="button-frame">
+                <button className="btn btn-primary btn-lg">=</button>
+            </div>
+        );
+    }
+});
+
+
+var AnswerFrame = React.createClass({
+    render: function(){
+        return (
+            <div id="answer-frame">
+                <div className="well"></div>
+            </div>
+        );
+    }
+});
+
+var NumbersFrame = React.createClass({
+
+    render: function(){
+
+        var numbers = [];
+
+        for(var i = 1; i <= 9; i++){
+            numbers.push(
+                <div className="number">{i}</div>
+            );
+        }
+
+
+        return (
+            <div id="numbers-frame">
+                <div className="well">
+                    {numbers}
+                </div>
+            </div>
+        );
+    }
+});
+
+var Game = React.createClass({
+    render: function(){
+        return (
+            <div id="game">
+                <h2>Play Nine</h2>
+                <hr/>
+                <div className="clearfix">
+                    <StarsFrame />
+                    <ButtonFrame />
+                    <AnswerFrame />
+                </div>
+
+                <NumbersFrame />
+
             </div>
         );
     }
 });
 
 React.render(
-    <Main />,
-    document.getElementById("root")
+    <Game />,
+    document.getElementById("container")
 );
