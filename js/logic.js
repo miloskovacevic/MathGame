@@ -3,7 +3,7 @@ var StarsFrame = React.createClass({
 
     render: function(){
 
-        var numberOfStars = Math.floor(Math.random()*9) + 1;
+        var numberOfStars = this.props.brojZvijezda;
 
         var stars = [];
         for(var i = 0; i< numberOfStars; i++) {
@@ -34,10 +34,21 @@ var ButtonFrame = React.createClass({
 
 
 var AnswerFrame = React.createClass({
+
     render: function(){
+        //var numbers = [];
+        //
+        //for(var i = 0; i < this.props.izabraniBrojevi.length; i++){
+        //    numbers.push(
+        //        <div className="number">{this.props.izabaraniBrojevi[i]}</div>
+        //    );
+        //}
+
         return (
             <div id="answer-frame">
-                <div className="well"></div>
+                <div className="well">
+                    <div className="number">{this.props.izabraniBrojevi}</div>
+                </div>
             </div>
         );
     }
@@ -48,13 +59,16 @@ var NumbersFrame = React.createClass({
     render: function(){
 
         var numbers = [];
+        var className;
+        var selectedNumbers = this.props.izabraniBrojevi;
+        var clickNumber = this.props.clickNumber; // ovo je funkcija koja je prop na komponenti
 
         for(var i = 1; i <= 9; i++){
+            className = "number selected-" + (selectedNumbers.indexOf(i) >= 0);
             numbers.push(
-                <div className="number">{i}</div>
+                <div className={className} onClick={clickNumber.bind(null, i)}>{i}</div>
             );
         }
-
 
         return (
             <div id="numbers-frame">
@@ -67,18 +81,35 @@ var NumbersFrame = React.createClass({
 });
 
 var Game = React.createClass({
+
+    getInitialState: function(){
+        return {
+            numberOfStars: Math.floor(Math.random() * 9) + 1 ,
+            selectedNumbers: []
+        };
+    },
+
+    clickNumber: function(clickedNumber){
+        if(this.state.selectedNumbers.indexOf(clickedNumber) < 0){
+            this.setState({
+                selectedNumbers: this.state.selectedNumbers.concat(clickedNumber)
+            });
+        }
+
+    },
+
     render: function(){
         return (
             <div id="game">
                 <h2>Play Nine</h2>
                 <hr/>
                 <div className="clearfix">
-                    <StarsFrame />
+                    <StarsFrame brojZvijezda={this.state.numberOfStars} />
                     <ButtonFrame />
-                    <AnswerFrame />
+                    <AnswerFrame izabraniBrojevi={this.state.selectedNumbers} />
                 </div>
 
-                <NumbersFrame />
+                <NumbersFrame izabraniBrojevi={this.state.selectedNumbers} clickNumber={this.clickNumber}  />
 
             </div>
         );
