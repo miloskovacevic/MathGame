@@ -28,15 +28,20 @@ var ButtonFrame = React.createClass({
         var disabled;
         var button;
         var correct = this.props.correct;
+        var acceptAnswer = this.props.acceptAnswer;
+        var redrawCounter = this.props.redrawCounter;
+
         switch (correct){
             case true :
+
                 button = (
-                    <button className="btn btn-success btn-lg">
+                    <button className="btn btn-success btn-lg" onClick={acceptAnswer}>
                         <span className="glyphicon glyphicon-ok"></span>
                     </button>
                 );
                 break;
             case false:
+
                 button = (
                     <button className="btn btn-danger btn-lg">
                         <span className="glyphicon glyphicon-remove"></span>
@@ -44,6 +49,7 @@ var ButtonFrame = React.createClass({
                 );
                 break;
             default :
+
                 disabled = this.props.selectedNumbers.length === 0 ? true : false;
                 button = (
                     <button className="btn btn-primary btn-lg" disabled={disabled}
@@ -51,11 +57,18 @@ var ButtonFrame = React.createClass({
                 );
         }
 
-        var selectedNumbers = this.props.selectedNumbers;
-
         return (
             <div id="button-frame">
                 {button}
+                <br />
+                <br />
+                <button className="btn btn-warning btn-xs" onClick={this.props.redraw}
+                    disabled={redrawCounter === 0}
+                    >
+                    <span className="glyphicon glyphicon-refresh"></span>
+                    &nbsp;
+                    {redrawCounter}
+                </button>
             </div>
         );
     }
@@ -97,9 +110,13 @@ var NumbersFrame = React.createClass({
         var className;
         var selectedNumbers = this.props.izabraniBrojevi;
         var selectNumber = this.props.selectNumber; // ovo je funkcija koja je prop na komponenti
+        var usedNumbers = this.props.usedNumbers;
 
         for(var i = 1; i <= 9; i++){
             className = "number selected-" + (selectedNumbers.indexOf(i) >= 0);
+            className += " used-" + (usedNumbers.indexOf(i) >= 0);
+
+
             numbers.push(
                 <div className={className} onClick={selectNumber.bind(null, i)}>{i}</div>
             );
@@ -115,14 +132,35 @@ var NumbersFrame = React.createClass({
     }
 });
 
+var DoneFrame = React.createClass({
+    render: function(){
+
+        return (
+            <div className = "well text-center">
+                <h2>...</h2>
+            </div>
+
+        );
+    }
+
+
+});
+
 var Game = React.createClass({
 
     getInitialState: function(){
         return {
-            numberOfStars: Math.floor(Math.random() * 9) + 1 ,
+            numberOfStars: this.randomNumber(),
             selectedNumbers: [],
-            correct : null
+            correct : null,
+            usedNumbers: [],
+            redrawCounter: 5,
+            doneStatus: 'Game Over'
         };
+    },
+
+    randomNumber: function(){
+        return Math.floor(Math.random() * 9) + 1
     },
 
     selectNumber: function(clickedNumber){
@@ -168,11 +206,37 @@ var Game = React.createClass({
       });
     },
 
+    acceptAnswer: function () {
+        //used numbers...
+        var usedNumbers = this.state.usedNumbers.concat(this.state.selectedNumbers);
+        this.setState({
+            selectedNumbers : [],
+            usedNumbers : usedNumbers,
+            correct : null,
+            numberOfStars : this.randomNumber()
+        });
+    },
+
+    redraw : function(){
+        if(this.state.redrawCounter > 0)
+        {
+            this.setState({
+                numberOfStars: this.randomNumber(),
+                correct : null,
+                selectedNumbers : [],
+                redrawCounter: this.state.redrawCounter - 1
+            });
+        }
+    },
+
     render: function(){
         var selectedNumbers = this.state.selectedNumbers;
         var numberOfStars = this.state.numberOfStars;
         var correct = this.state.correct;
+        var usedNumbers = this.state.usedNumbers;
+        var redrawCounter = this.state.redrawCounter;
 
+        console.log(usedNumbers);
 
         return (
             <div id="game">
@@ -182,12 +246,19 @@ var Game = React.createClass({
                     <StarsFrame brojZvijezda={numberOfStars} />
                     <ButtonFrame selectedNumbers ={selectedNumbers}
                                  correct = {correct}
-                                 checkAnswer = {this.checkAnswer}   />
+                                 checkAnswer = {this.checkAnswer}
+                                 acceptAnswer = {this.acceptAnswer}
+                                 redraw={this.redraw}
+                                 redrawCounter = {redrawCounter}   />
                     <AnswerFrame izabraniBrojevi={selectedNumbers}
                                  unselectNumber={this.unselectNumber} />
                 </div>
 
-                <NumbersFrame izabraniBrojevi={selectedNumbers} selectNumber={this.selectNumber}  />
+                <NumbersFrame izabraniBrojevi={selectedNumbers}
+                              selectNumber={this.selectNumber}
+                              usedNumbers={usedNumbers}
+                    />
+                <DoneFrame />
 
             </div>
         );
