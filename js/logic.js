@@ -137,7 +137,9 @@ var DoneFrame = React.createClass({
 
         return (
             <div className = "well text-center">
-                <h2>...</h2>
+                <h2>{this.props.doneStatus}</h2>
+                <button className="btn btn-default"
+                    onClick={this.props.resetGame} >Play again!</button>
             </div>
 
         );
@@ -145,6 +147,24 @@ var DoneFrame = React.createClass({
 
 
 });
+
+var possibleCombinationSum = function(arr, n) {
+    if (arr.indexOf(n) >= 0) { return true; }
+    if (arr[0] > n) { return false; }
+    if (arr[arr.length - 1] > n) {
+        arr.pop();
+        return possibleCombinationSum(arr, n);
+    }
+    var listSize = arr.length, combinationsCount = (1 << listSize)
+    for (var i = 1; i < combinationsCount ; i++ ) {
+        var combinationSum = 0;
+        for (var j=0 ; j < listSize ; j++) {
+            if (i & (1 << j)) { combinationSum += arr[j]; }
+        }
+        if (n === combinationSum) { return true; }
+    }
+    return false;
+};
 
 var Game = React.createClass({
 
@@ -155,8 +175,12 @@ var Game = React.createClass({
             correct : null,
             usedNumbers: [],
             redrawCounter: 5,
-            doneStatus: 'Game Over'
+            doneStatus: null
         };
+    },
+
+    resetGame: function(){
+        this.replaceState(this.getInitialState());
     },
 
     randomNumber: function(){
@@ -214,7 +238,40 @@ var Game = React.createClass({
             usedNumbers : usedNumbers,
             correct : null,
             numberOfStars : this.randomNumber()
+        }, function () {
+            this.updateDoneStatus();
         });
+    },
+
+    possibleSolutions: function(){
+        var numberOfStars = this.state.numberOfStars;
+        var possibleNumbers = [];
+        var usedNumbers = this.state.usedNumbers;
+
+        for (var i = 1; i <= 9; i++){
+            if(usedNumbers.indexOf(i) < 0){
+                possibleNumbers.push(i);
+            }
+        }
+
+        return possibleCombinationSum(possibleNumbers, numberOfStars);
+
+    },
+
+    updateDoneStatus: function(){
+        if(this.state.usedNumbers.length === 9){
+            this.setState({
+                doneStatus: 'Done! #winning'
+            });
+            return;
+        }
+        if(this.redrawCounter === 0 && !this.possibleSolutons()){
+            this.setState({
+                doneStatus: 'Game Over!'
+            });
+        }
+
+
     },
 
     redraw : function(){
@@ -225,6 +282,8 @@ var Game = React.createClass({
                 correct : null,
                 selectedNumbers : [],
                 redrawCounter: this.state.redrawCounter - 1
+            }, function () {
+                this.updateDoneStatus();
             });
         }
     },
@@ -235,8 +294,21 @@ var Game = React.createClass({
         var correct = this.state.correct;
         var usedNumbers = this.state.usedNumbers;
         var redrawCounter = this.state.redrawCounter;
+        var doneStatus = this.state.doneStatus;
 
         console.log(usedNumbers);
+
+        var bottomFrame;
+
+        if(doneStatus) {
+            bottomFrame = <DoneFrame doneStatus = {doneStatus}
+                resetGame = {this.resetGame} />;
+        }
+        else {
+            bottomFrame = <NumbersFrame izabraniBrojevi={selectedNumbers}
+                                        selectNumber={this.selectNumber}
+                                        usedNumbers={usedNumbers}/> ;
+        }
 
         return (
             <div id="game">
@@ -253,13 +325,7 @@ var Game = React.createClass({
                     <AnswerFrame izabraniBrojevi={selectedNumbers}
                                  unselectNumber={this.unselectNumber} />
                 </div>
-
-                <NumbersFrame izabraniBrojevi={selectedNumbers}
-                              selectNumber={this.selectNumber}
-                              usedNumbers={usedNumbers}
-                    />
-                <DoneFrame />
-
+                {bottomFrame}
             </div>
         );
     }
